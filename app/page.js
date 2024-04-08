@@ -3,6 +3,7 @@ export default function Home() {
    <div className="grid grid-cols-2 h-[85vh]">
       <div className="border border-green-400 h-full flex justify-center items-center">
          Leaderboard
+         Escrito por javi
       </div>
       <div className="border bg-red-400 border-red-400 h-full flex justify-center items-center">
          Last matches

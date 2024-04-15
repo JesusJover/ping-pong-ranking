@@ -24,6 +24,8 @@ export function createFirestoreConnection() {
    admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
    })
+
+   return admin.firestore()
 }
 
 const firestore = createFirestoreConnection()

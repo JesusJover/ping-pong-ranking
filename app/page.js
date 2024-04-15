@@ -1,3 +1,4 @@
+import LastMatches from "./components/LastMatches";
 import Leaderboard from "./components/Leaderboard";
 
 export default function Home() {
@@ -6,9 +7,9 @@ export default function Home() {
       <div className="h-full flex justify-center items-center">
          <Leaderboard />
       </div>
-      <div className="border bg-red-400 border-red-400 h-full flex justify-center items-center">
-         Last matches
-         and buttons y soy Jesús
+
+      <div className="h-full flex justify-center items-center">
+         <LastMatches />
       </div>
    </div>
   );

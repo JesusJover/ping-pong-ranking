@@ -1,8 +1,11 @@
+import Title from "../components/Title";
+
 export default function RegistrarPartido() {
    return (
       <div className="w-1/2 m-auto flex flex-col items-center p-6 gap-6">
-         <h1 className="font-bold text-4xl">Registro de partido</h1>
-         <form className="flex flex-col gap-3 text-xl">
+         <Title >Registrar partido</Title>
+
+         <form className="flex flex-col gap-3 text-sm lg:text-xl">
             <div className="flex gap-2 items-center">
                <p>Jugador 1:</p>
                <select className="p-2 bg-ping-pong-blue bg-opacity-10" name="" id="">

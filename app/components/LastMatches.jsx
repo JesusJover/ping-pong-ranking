@@ -36,7 +36,7 @@ export default async function LastMatches() {
    })
 
    return (
-      <div className="w-full h-full flex flex-col lg:justify-center items-center gap-5">
+      <div className="w-full flex flex-col lg:justify-center items-center gap-5">
             <h1 className="text-3xl font-bold">Últimos partidos</h1>
             <div className="w-[90%] lg:w-[80%]"> 
             { matches.map((match, index) => 

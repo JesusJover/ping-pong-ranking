@@ -21,7 +21,6 @@ export default async function Leaderboard () {
             )
             )}
          </div>
-         <p>(esto ya viene de la base de datos)</p>
       </div>
    )
 }

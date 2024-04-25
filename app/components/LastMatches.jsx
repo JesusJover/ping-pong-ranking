@@ -1,7 +1,9 @@
 import db from '../models/_connection-admin'
-import { firestore } from 'firebase-admin'
+import Title from './Title'
+import { cookies } from 'next/headers'
 
 export default async function LastMatches() {
+   let _ = cookies()
    const { docs: matchesDocs } = await db.collection('partidos')
                            .orderBy('fin', 'desc')
                            .limit(5)
@@ -37,7 +39,7 @@ export default async function LastMatches() {
 
    return (
       <div className="w-full flex flex-col lg:justify-center items-center gap-5">
-            <h1 className="text-3xl font-bold">Últimos partidos</h1>
+            <Title>Últimos partidos</Title>
             <div className="w-[90%] lg:w-[80%]"> 
             { matches.map((match, index) => 
                <div key={index} className="p-3 odd:bg-slate-200 even:bg-white

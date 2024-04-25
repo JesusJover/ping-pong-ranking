@@ -1,6 +1,9 @@
 
 import db from '../models/_connection-admin'
 
+// Components
+import Title from './Title'
+
 export default async function Leaderboard () {
    // Code example to get data from Firestore
    const { docs, size } = await db.collection('jugadores').get()
@@ -10,7 +13,7 @@ export default async function Leaderboard () {
 
    return(
       <div className="w-full h-full flex flex-col lg:justify-center items-center gap-5">
-         <h1 className="text-3xl font-bold">Clasificación</h1>
+         <Title>Clasificación</Title>
          <div className="w-[90%] lg:w-[70%] border">
             { playersSorted.map((player, index) => ( 
                <div key={index} className="flex text-lg lg:text-2xl justify-between p-2 px-4 lg:py-3 lg:px-4 odd:bg-slate-200 even:bg-white">

@@ -1,5 +1,4 @@
 const admin = require('firebase-admin')
-//const serviceAccount = require('./firestore.json')
 
 // Generating cert file with process.env variables
 const serviceAccount = {

@@ -1,8 +1,9 @@
 import db from '../models/_connection-admin'
-import { firestore } from 'firebase-admin'
 import Title from './Title'
+import { cookies } from 'next/headers'
 
 export default async function LastMatches() {
+   let _ = cookies()
    const { docs: matchesDocs } = await db.collection('partidos')
                            .orderBy('fin', 'desc')
                            .limit(5)

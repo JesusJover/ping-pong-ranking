@@ -2,20 +2,24 @@
 
 // Librerías
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 // Componentes
 import Title from "../components/Title";
 
 export default function RegistrarPartido() {
+   const router = useRouter()
+
    const [loading, setLoading] = useState(false)
+   const [loadingReg, setLoadingReg] = useState(false)
 
    const [players, setPlayers] = useState([])
 
-   const [player1, setPlayer1] = useState("")
+   const [player1, setPlayer1] = useState(null)
    const [punt1, setPunt1] = useState(0)
-   const [player2, setPlayer2] = useState("")
+   const [player2, setPlayer2] = useState(null)
    const [punt2, setPunt2] = useState(0)
-   const [referee, setReferee] = useState("")
+   const [referee, setReferee] = useState(null)
 
    useEffect(() => {
       setLoading(true)
@@ -23,6 +27,9 @@ export default function RegistrarPartido() {
       .then(data => data.json())
       .then(p => {
          setPlayers(p)
+         setPlayer1(p[0].id)
+         setPlayer2(p[1].id)
+         setReferee(p[0].id)
          setLoading(false)
       })
    }, [])
@@ -30,7 +37,8 @@ export default function RegistrarPartido() {
    async function registrarPartido(e){
       e.preventDefault()
 
-      await fetch('/api/matches',{
+      setLoadingReg(true)
+      fetch('/api/matches',{
          method: 'POST',
          body: JSON.stringify({
             player1,
@@ -39,6 +47,9 @@ export default function RegistrarPartido() {
             punt2,
             referee
          })
+      }).then(() => {
+         setLoading(false)
+         router.push('/')
       })
 
    }
@@ -59,8 +70,8 @@ export default function RegistrarPartido() {
                <select id="player-1" 
                   className="p-2 bg-ping-pong-blue bg-opacity-10"
                   onChange={(e) => setPlayer1(e.target.value)}
-                  value={players[0].name}>
-                  { players.map((p,i) => <option key={i} value={p.nombre}>{p.nombre}</option>)}
+                  value={player1 || players[0].id}>
+                  { players.map((p,i) => <option key={i} value={p.id}>{p.nombre}</option>)}
                </select>
             </div>
 
@@ -82,10 +93,10 @@ export default function RegistrarPartido() {
                <select id="player-2" 
                   className="p-2 bg-ping-pong-blue bg-opacity-10"
                   onChange={e => setPlayer2(e.target.value)}
-                  value={player1 !== players[1].name ? players[1].name : players[0].name}>
+                  value={player2 || players[1].id}>
                   { players.filter(p =>{
                      return p.nombre !== player1
-                  }).map((p,i) => <option key={i} value={p.nombre}>{p.nombre}</option>)}
+                  }).map((p,i) => <option key={i} value={p.id}>{p.nombre}</option>)}
                </select>
             </div>
 
@@ -107,8 +118,8 @@ export default function RegistrarPartido() {
                <select id="player-2" 
                   className="p-2 bg-ping-pong-blue bg-opacity-10"
                   onChange={e => setReferee(e.target.value)}
-                  value={player1}>
-                  { players.map((p,i) => <option key={i} value={p.nombre}>{p.nombre}</option>)}
+                  value={referee}>
+                  { players.map((p,i) => <option key={i} value={p.id}>{p.nombre}</option>)}
                </select>
             </div>
 
@@ -122,7 +133,7 @@ export default function RegistrarPartido() {
                </div>
             </div>
 
-            <button type="submit" className="bg-ping-pong-blue text-white p-3 rounded-lg text-xl hover:bg-opacity-45">Registrar partido</button>
+            <button disabled={loadingReg} type="submit" className="bg-ping-pong-blue text-white p-3 rounded-lg text-xl hover:bg-opacity-45">Registrar partido</button>
          </form>
       </div>
    )

@@ -1,4 +1,5 @@
 import db from '../models/_connection-admin'
+import Match from './Match'
 import Title from './Title'
 import { cookies } from 'next/headers'
 
@@ -38,28 +39,11 @@ export default async function LastMatches() {
    })
 
    return (
-      <div className="w-full flex flex-col lg:justify-center items-center gap-5">
+      <div className="w-full flex flex-col lg:justify-center items-center gap-5 py-4">
             <Title>Últimos partidos</Title>
             <div className="w-[90%] lg:w-[80%]"> 
             { matches.map((match, index) => 
-               <div key={index} className="p-3 odd:bg-slate-200 even:bg-white
-                  grid grid-cols-3 justify-between">
-                  <div className={`flex-col items-start ${match.puntuacion1 > match.puntuacion2 ? "text-green-700" : "text-red-500"}`}>
-                     <h3 className="text-xl font-bold">{match.jugador1.nombre}</h3>
-                     <p>{match.puntos1 > 0 ? `+${match.puntos1}` : match.puntos1}</p>
-                  </div>
-
-                  <div className="flex justify-center items-center gap-2">
-                     <p className={`text-3xl font-bold ${match.puntuacion1 > match.puntuacion2 ? "text-green-700" : "text-red-500"}`}>{match.puntuacion1}</p>
-                     <p>vs</p>
-                     <p className={`text-3xl font-bold ${match.puntuacion1 < match.puntuacion2 ? "text-green-700" : "text-red-500"}`}>{match.puntuacion2}</p>
-                  </div>
-
-                 <div className={`flex-col items-end ${match.puntuacion1 < match.puntuacion2 ? "text-green-700" : "text-red-500"}`}>
-                     <h3 className="text-xl font-bold text-right">{match.jugador2.nombre}</h3>
-                     <p className='text-right'>{match.puntos2 > 0 ? `+${match.puntos2}` : match.puntos2}</p>
-                 </div>
-               </div>
+               <Match key={index} match={match} />
                )
             }
             </div>

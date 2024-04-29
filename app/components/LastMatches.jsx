@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import db from '../models/_connection-admin'
 import Match from './Match'
 import Title from './Title'
@@ -42,11 +43,12 @@ export default async function LastMatches() {
       <div className="w-full flex flex-col lg:justify-center items-center gap-5 py-4">
             <Title>Últimos partidos</Title>
             <div className="w-[90%] lg:w-[80%]"> 
-            { matches.map((match, index) => 
-               <Match key={index} match={match} />
-               )
-            }
+               { matches.map((match, index) => 
+                  <Match key={index} match={match} />
+                  )
+               }
             </div>
+            <Link className='text-blue-500' href="/partidos"> Ver todos los partidos </Link>
       </div>
    )
 }

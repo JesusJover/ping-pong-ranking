@@ -1,6 +1,13 @@
 import db from '../../models/_connection-admin'
 
-export async function GET(req, res) {
+export async function POST(req, res) {
+    // Get body from JSON
+    const { key } = await req.json()
+
+    if (key !== process.env.SECRET_KEY) {
+        return Response.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
     const matchesCol = db.collection('partidos')
     const playersCol = db.collection('jugadores')
 
@@ -11,6 +18,9 @@ export async function GET(req, res) {
             puntos: 1000
         })
     })
+
+    // Add a 500 ms delay to avoid exceeding the quota
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     const matchesRefs = await matchesCol.orderBy('fin', 'asc').get()
     //matchesRefs.docs.forEach( async (match) => {
@@ -25,20 +35,22 @@ export async function GET(req, res) {
 
         let prob
         if (puntuacion1 > puntuacion2) {
+            // Probabilidad de que gane el jugador 2, se le aplica al 1
             prob = puntosRanking2 / (puntosRanking1 + puntosRanking2)
         } else {
+            // Probabilidad de que gane el jugador 1, se le aplica al 2
             prob = puntosRanking1 / (puntosRanking1 + puntosRanking2)
         }
 
-        const KDiff = 20
+        const KDiff = 1
         const KRanking = 18
         const diffPuntos = (Math.abs(puntuacion1 - puntuacion2)-1)/10
         // const actualizacion = parseInt(K * prob * diffPuntos)
         //const actualizacionRanking = prob * KRanking
         const actualizacionRanking = (prob > 0.5 ? (10 + (prob - 0.5) * 180) : prob * 20)
-        const actualizacionDiferencia = 0 // prob * diffPuntos * KDiff
+        const actualizacionDiferencia = (prob > 0.5 ? (10 + (prob - 0.5) * 10) : prob * 10) * diffPuntos * KDiff
         const actualizacion = parseInt(actualizacionRanking + actualizacionDiferencia)
-        console.log("Actualizacion: " + actualizacion + " Ranking: " + actualizacionRanking + " Diferencia: " + actualizacionDiferencia + " Prob: " + prob + " Puntos1: " + puntuacion1 + " Puntos2: " + puntuacion2 + " PuntosRanking1: " + puntosRanking1 + " PuntosRanking2: " + puntosRanking2)
+        console.log("Suma/resta: " + actualizacion + " Ranking: " + actualizacionRanking + " Aport. dif. part.: " + actualizacionDiferencia + " Prob: " + prob + " Puntos1: " + puntuacion1 + " Puntos2: " + puntuacion2 + " PuntosRanking1: " + puntosRanking1 + " PuntosRanking2: " + puntosRanking2)
 
         if (puntuacion1 > puntuacion2) {
             await playersCol.doc(player1.id).update({

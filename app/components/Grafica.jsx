@@ -6,8 +6,9 @@ export default function Grafica({ data }) {
     const y = data.map(d => d.puntos)
 
     return (
-        <Plot
-            className="w-full"
+      <div className="w-full h-[400px]">
+         <Plot
+            className="w-full h-full"
             data={[
                 {
                     x,
@@ -17,8 +18,12 @@ export default function Grafica({ data }) {
                     marker: { color: 'red' },
                 }
             ]}
-            layout={{ width: "100%", height: 500, margin: { t: 0 , r: 0, l: 0, b: 0}}}
+            layout={{
+               autosize: true,
+               margin: { t: 0 },
+            }}
         />
+      </div>
     )
 }
 

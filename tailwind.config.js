@@ -8,7 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors:{
-         "ping-pong-blue": "#34485E"
+         "ping-pong-blue": "#34485E",
+         "pp-white": "#F4F1EC",
+         "pp-red": "#BE4236",
+         "pp-black": "#1F262A",
+         "pp-grey": "#BCC8CC",
+         "pp-beige": "#E6DFD3",
+         "pp-blue": "#216B88"
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

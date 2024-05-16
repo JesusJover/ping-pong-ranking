@@ -1,4 +1,5 @@
-const admin = require('firebase-admin')
+//const admin = require('firebase-admin')
+import admin from 'firebase-admin'
 
 // Generating cert file with process.env variables
 const serviceAccount = {

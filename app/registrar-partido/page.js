@@ -4,16 +4,44 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
+import * as Ably from 'ably';
+import { AblyProvider, useChannel, useConnectionStateListener, ChannelProvider } from 'ably/react';
+
+
 // Componentes
 import Title from "../components/Title";
 
+function PlublicadorEstadoPartido ({
+   player1 = 'Jugador 1',
+   player2 = 'Jugador 2',
+   punt1 = 0,
+   punt2 = 0,
+   referee = 'Árbitro',
+   inicio = new Date()
+}) {
+   const { channel } = useChannel('marcador')
+
+   useEffect(() => {
+      channel.publish('prueba', {
+         player1,
+         player2,
+         punt1,
+         punt2,
+         referee,
+         inicio
+      })
+   }, [player1, player2, punt1, punt2, referee])
+}
+
 export default function RegistrarPartido() {
    const router = useRouter()
+   const client = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY, clientId: 'registrar-partido'});
 
    const [loading, setLoading] = useState(false)
    const [loadingReg, setLoadingReg] = useState(false)
 
    const [players, setPlayers] = useState([])
+   const [inicio, newInicio] = useState(new Date())
 
    const [player1, setPlayer1] = useState(null)
    const [punt1, setPunt1] = useState(0)
@@ -72,6 +100,20 @@ export default function RegistrarPartido() {
    
    return (
       <div className="w-3/4 md:w-1/2 m-auto flex flex-col items-center p-6 gap-6">
+         
+         <AblyProvider client={client}>
+            <ChannelProvider channelName='marcador'>
+               <PlublicadorEstadoPartido
+                  player1={players.find(p => p.id === player1).nombre}
+                  player2={players.find(p => p.id === player2).nombre}
+                  punt1={punt1}
+                  punt2={punt2}
+                  referee={players.find(p => p.id === referee).nombre}
+                  inicio={inicio}
+               />
+            </ChannelProvider>
+         </AblyProvider>
+         
          <Title >Registrar partido</Title>
 
          <form className="flex flex-col gap-3 text-sm lg:text-xl" onSubmit={e => registrarPartido(e)}>

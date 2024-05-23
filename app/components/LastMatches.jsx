@@ -8,7 +8,7 @@ export default async function LastMatches() {
    let _ = cookies()
    const { docs: matchesDocs } = await db.collection('partidos')
                            .orderBy('fin', 'desc')
-                           .limit(5)
+                           .limit(6)
                            .get()
    let matches = matchesDocs.map(doc => doc.data())
 
@@ -40,7 +40,7 @@ export default async function LastMatches() {
    })
 
    return (
-      <div className="w-full flex flex-col lg:justify-center items-center gap-5 py-4">
+      <div className="w-full flex flex-col items-center gap-5">
             <Title>Últimos partidos</Title>
             <div className="w-[90%] lg:w-[80%]"> 
                { matches.map((match, index) => 

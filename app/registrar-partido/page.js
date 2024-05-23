@@ -51,7 +51,9 @@ export default function RegistrarPartido() {
 
    useEffect(() => {
       setLoading(true)
-      fetch('/api/players')
+      fetch('/api/players', 
+         { cache: 'no-cache' }
+      )
       .then(data => data.json())
       .then(p => {
          setPlayers(p)

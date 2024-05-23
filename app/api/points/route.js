@@ -19,7 +19,7 @@ export async function POST(req, res) {
       playersRefs.docs.forEach(async (doc) => {
          // Set the points to 1000
          await t.update(playersCol.doc(doc.id), {
-            puntos: 1000,
+            puntos: 100,
             estadisticas: {
                derrotas: 0,
                victorias: 0,
@@ -28,7 +28,7 @@ export async function POST(req, res) {
                partidos: 0
             },
             ranking: {
-               puntos: 1000,
+               puntos: 0,
                posicion: -1
             }
          })
@@ -123,6 +123,11 @@ export async function POST(req, res) {
             prob = puntosRanking1 / (puntosRanking1 + puntosRanking2)
          }
 
+         // If prob is NAN, set it to 0.5
+         if (puntosRanking1 === 0 || puntosRanking2 === 0) {
+            prob = 0.5
+         }
+
          const KDiff = 1
          const KRanking = 18
          const diffPuntos = (Math.abs(puntuacion1 - puntuacion2) - 1) / 10
@@ -155,13 +160,13 @@ export async function POST(req, res) {
             })
 
             t.update(playersCol.doc(player2.id), {
-               puntos: puntosRanking2 - actualizacion,
+               puntos: puntosRanking2 + 3,
                estadisticas: newStats2
             })
 
             t.update(matchesCol.doc(match.id), {
                puntos1: actualizacion,
-               puntos2: -actualizacion
+               puntos2: 3
             })
 
          } else {
@@ -177,7 +182,7 @@ export async function POST(req, res) {
             // })
 
             t.update(playersCol.doc(player1.id), {
-               puntos: puntosRanking1 - actualizacion,
+               puntos: puntosRanking1 + 3,
                estadisticas: newStats1
             })
 
@@ -187,7 +192,7 @@ export async function POST(req, res) {
             })
 
             t.update(matchesCol.doc(match.id), {
-               puntos1: -actualizacion,
+               puntos1: 3,
                puntos2: actualizacion
             })
          }
@@ -240,7 +245,7 @@ export async function POST(req, res) {
       })
 
       // Wait for the update to finish
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 100))
    }
 
    // let player = await playersCol.doc('alejandro-martinez').get()

@@ -13,9 +13,9 @@ export default async function Leaderboard () {
    const playersSorted = players.sort((a, b) => b.puntos - a.puntos) 
 
    return(
-      <div className="w-full h-full flex flex-col lg:justify-start items-center gap-5 py-4">
+      <div className="w-full flex flex-col justify-start items-center gap-5">
          <Title>Clasificación</Title>
-         <div className="w-[90%] lg:w-[70%] border">
+         <div className="w-[90%] lg:w-[80%] border">
             { playersSorted.map((player, index) => ( 
                <div key={index} className="flex text-sm md:text-xl lg:text-2xl justify-between p-2 px-4 lg:py-3 lg:px-4 odd:bg-slate-200 even:bg-white">
                   <p className="font-bold w-[10%]">{index+1}</p>

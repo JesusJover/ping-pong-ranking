@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import "./globals.css"
 import { Inter } from 'next/font/google'
+import Link from 'next/link';
 
 export const metadata = {
   title: "Ping-Pong Retics",
@@ -15,7 +16,9 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body className={inter.className}>
          <header className='h-[12vh] bg-slate-100 overflow-hidden flex justify-center p-5'>
-            <Image className='h-full' src="/logos/ping-pong-retics.svg" alt="logo" width={900} height={600}/>
+            <Link href='/'>
+               <Image className='h-full' src="/logos/ping-pong-retics.svg" alt="logo" width={900} height={600}/>
+            </Link>
          </header>
          {/* <AblyProvider client={client}> */}
             {children}

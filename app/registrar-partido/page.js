@@ -42,6 +42,7 @@ export default function MatchLive() {
 
    const [players, setPlayers] = useState([])
    const [inicio, newInicio] = useState(new Date())
+   const [fin, setFin] = useState(new Date())
 
    const [player1, setPlayer1] = useState(null)
    const [punt1, setPunt1] = useState(0)
@@ -75,7 +76,8 @@ export default function MatchLive() {
             punt1,
             player2,
             punt2,
-            referee
+            referee,
+            fin
          })
       }).then(() => {
          setLoading(false)
@@ -203,6 +205,9 @@ export default function MatchLive() {
                   <input type="datetime-local" 
                      className="bg-slate-200 p-2" 
                      defaultValue={new Date().toISOString().slice(0, 16)}
+                     onChange={e => {
+                        setFin(new Date(e.target.value))
+                     }}
                   />
                </div>
             </div>

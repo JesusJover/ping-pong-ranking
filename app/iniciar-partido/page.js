@@ -8,20 +8,38 @@ import { useRouter } from "next/navigation";
 import Title from "../components/Title";
 import Link from 'next/link';
 
+import * as Ably from 'ably';
+import { AblyProvider, useChannel, useConnectionStateListener, ChannelProvider } from 'ably/react';
+
 export default function IniciarPartido() {
+   const client = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY, clientId: 'iniciar-partido'});
+
+   return (
+      <AblyProvider client={client}>
+         <ChannelProvider channelName='marcador'>
+            <IniciarPartido2 />
+         </ChannelProvider>
+      </AblyProvider>
+      
+   )
+}
+
+export function IniciarPartido2() {
    const router = useRouter();
+   const { channel } = useChannel('marcador');
 
    const [loading, setLoading] = useState(false);
-   const [loadingReg, setLoadingReg] = useState(false);
 
    const [players, setPlayers] = useState([]);
    const [player1, setPlayer1] = useState(null);
    const [player2, setPlayer2] = useState(null);
    const [referee, setReferee] = useState(null);
-   const [servePlayer, setServePlayer] = useState(0);
-   const [countdown, setCountdown] = useState(null);
-   const [timerType, setTimerType] = useState(null);
 
+   const [servePlayer, setServePlayer] = useState(0);
+   const [countdown, setCountdown] = useState(null); // stopwatch: fecha de inicio, countdown: fecha de finalización
+   const [timerType, setTimerType] = useState(null); // stopwatch o countdown
+
+   // Para recuperar los jugadores
    useEffect(() => {
       setLoading(true);
       fetch('/api/players')
@@ -35,24 +53,6 @@ export default function IniciarPartido() {
          });
    }, []);
 
-   async function iniciarPartido(e) {
-      e.preventDefault();
-
-      setLoadingReg(true);
-      fetch('/api/matches', {
-         method: 'POST',
-         body: JSON.stringify({
-            player1,
-            punt1,
-            player2,
-            punt2,
-            referee
-         })
-      }).then(() => {
-         setLoading(false);
-         router.push('/');
-      });
-   }
 
    if (players.length === 0 || loading) {
       return (
@@ -62,26 +62,38 @@ export default function IniciarPartido() {
       );
    }
 
-   if (loadingReg) {
-      return (
-         <div className="flex h-[88vh] justify-center items-center p-5">
-            <h1 className="text-2xl">Iniciando partido ...</h1>
-         </div>
-      );
-   }
-
    const startStopwatch = () => {
       setCountdown(new Date());
       setTimerType("stopwatch");
+      channel.publish('mode', 'warmup');
+      channel.publish('warmup', { 
+         player1: players.find(p => p.id === player1).nombre,
+         player2: players.find(p => p.id === player2).nombre,
+         referee: players.find(p => p.id === referee).nombre,
+         countdown: new Date(),
+         timerType: "stopwatch"
+       });
    };
 
-   const startCountdown = (duration) => {
-      setCountdown(duration);
+   const timedown = (duration) => {
+      const countdownFinish = new Date();
+      // adding duration in seconds
+      countdownFinish.setSeconds(countdownFinish.getSeconds() + duration);
+      setCountdown(countdownFinish);
       setTimerType("countdown");
+      channel.publish('mode', 'warmup');
+      channel.publish('warmup', { 
+         player1: players.find(p => p.id === player1).nombre,
+         player2: players.find(p => p.id === player2).nombre,
+         referee: players.find(p => p.id === referee).nombre,
+         countdown: countdownFinish,
+         timerType: "countdown"
+       });
    };
    const stopWarmup = () => {
       setCountdown(null);
       setTimerType(null);
+      channel.publish('mode', 'nomatch');
    };
 
 
@@ -91,15 +103,18 @@ export default function IniciarPartido() {
          <div className="flex flex-col items-center gap-3">
             <div className="flex justify-between w-full gap-4">
                <button onClick={startStopwatch} className="bg-ping-pong-blue text-white p-2  w-16 h-16 rounded-full hover:bg-opacity-75">Crono</button>
-               <button onClick={() => startCountdown(120)} className="bg-ping-pong-blue text-white p-2 w-16 h-16 rounded-full hover:bg-opacity-75">2 min</button>
-               <button onClick={() => startCountdown(300)} className="bg-ping-pong-blue text-white p-2 w-16 h-16 rounded-full hover:bg-opacity-75">5 min</button>
+               <button onClick={() => timedown(120)} className="bg-ping-pong-blue text-white p-2 w-16 h-16 rounded-full hover:bg-opacity-75">2 min</button>
+               <button onClick={() => timedown(300)} className="bg-ping-pong-blue text-white p-2 w-16 h-16 rounded-full hover:bg-opacity-75">5 min</button>
             </div>
+
             {countdown !== null && (
                <div className="text-xl font-bold">
-                  <TimeWarmup startCount={countdown} timerType={timerType} />
+                  <TimeWarmup time={countdown} timerType={timerType} />
                </div>
             )}
-            <button onClick={stopWarmup} className="border border-ping-pong-blue text-ping-pong-blue px-3 py-1 rounded-lg text-xs md:text-sm xl:text-xl hover:bg-ping-pong-blue hover:bg-opacity-45">Parar calentamiento</button>
+
+            { timerType && <button onClick={stopWarmup} className="border border-ping-pong-blue text-ping-pong-blue px-3 py-1 rounded-lg text-xs md:text-sm xl:text-xl hover:bg-ping-pong-blue hover:bg-opacity-45">Parar calentamiento</button>}
+         
          </div>
          <Title>Iniciar partido</Title>
 
@@ -155,29 +170,50 @@ export default function IniciarPartido() {
                   {players.map((p, i) => <option key={i} value={p.id}>{p.nombre}</option>)}
                </select>
             </div>
-            <Link href="/iniciar-partido/control-partido-directo" disabled={loadingReg || servePlayer === 0} type="submit" className="bg-ping-pong-blue text-center text-white p-2 lg:p-3 rounded-lg text-sm lg:text-xl hover:bg-opacity-45">Iniciar partido</Link>
+
+            { servePlayer ?
+               <Link 
+                  href={{
+                     pathname: "/iniciar-partido/control-partido-directo",
+                     query: {
+                        player1,
+                        player2,
+                        referee,
+                        servePlayer
+                     }
+                  }}
+                  type="submit" 
+                  className="bg-ping-pong-blue text-center text-white p-2 lg:p-3 rounded-lg text-sm lg:text-xl hover:bg-opacity-45">
+                     Iniciar partido
+               </Link>
+               : 
+               <p className="text-center mt-4">
+                  Esperando punto de saque
+               </p>
+            }
+               
          </form>
       </div>
    );
 }
 
-function TimeWarmup({ startCount, timerType }) {
+function TimeWarmup({ time, timerType }) {
    const [seconds, setSeconds] = useState(null);
 
    useEffect(() => {
       let interval;
       if (timerType === "stopwatch") {
          interval = setInterval(() => {
-            setSeconds(Math.floor((new Date() - startCount) / 1000));
+            setSeconds(parseInt((new Date() - time)/1000));
          }, 1000);
       } else if (timerType === "countdown") {
          interval = setInterval(() => {
-            setSeconds(startCount => startCount - 1);
+            setSeconds(parseInt((time - new Date())/1000));
          }, 1000);
-         setSeconds(startCount);
+         setSeconds(parseInt((time - new Date())/1000));
       }
       return () => clearInterval(interval);
-   }, [startCount, timerType]);
+   }, [time, timerType]);
 
    const formatTime = (seconds) => {
       const minutes = Math.floor(seconds / 60);

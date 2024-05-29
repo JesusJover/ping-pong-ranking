@@ -4,6 +4,7 @@ import * as Ably from 'ably';
 import { AblyProvider, useChannel, useConnectionStateListener, ChannelProvider } from 'ably/react';
 
 export default function Marcador() {
+   // Creamos el cliente de Ably
    const client = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY, clientId: 'Marcador' });
 
    return (
@@ -16,15 +17,96 @@ export default function Marcador() {
 }
 
 function AblyPubSub() {
+   const [mode, setMode] = useState('nomatch');
+   const [warmup, setWarmup] = useState({});
+
+   // Información del partido en curso
    const [ partido , setPartido ] = useState({
       player1: 'Jugador 1',
       player2: 'Jugador 2',
       punt1: 0,
       punt2: 0,
+      servePlayer: 0,
       referee: 'Árbitro',
       inicio: new Date()
    })
 
+
+   useConnectionStateListener('connected', () => {
+      console.log('Conectado con el canal de mensajes');
+   });
+
+   const { channel } = useChannel('marcador', 'infoPartido' ,(message) => {
+      setPartido({
+         ...message.data,
+         inicio: new Date(message.data.inicio)
+      });
+   });
+
+   const { channel: channel2 } = useChannel('marcador', 'mode', (message) => {
+      setMode(message.data);
+   });
+
+   const { channel: channel3 } = useChannel('marcador', 'warmup', (message) => {
+      setWarmup(message.data);
+   });
+
+
+   if (mode === 'nomatch') {
+      return <NoMatch />
+   }
+
+   if (mode === 'warmup') {
+      return <WarmUp warmup={warmup} />
+   }
+
+   if (mode === 'match') {
+      return <Match partido={partido} />
+   }
+}
+
+function NoMatch() {
+   
+}
+
+function WarmUp({ warmup }) {
+   const [seconds, setSeconds] = useState(null);
+   const timerType = warmup.timerType;
+   const time = new Date(warmup.countdown);
+
+   useEffect(() => {
+      let interval;
+      if (timerType === "stopwatch") {
+         interval = setInterval(() => {
+            setSeconds(parseInt((new Date() - time)/1000));
+         }, 1000);
+      } else if (timerType === "countdown") {
+         interval = setInterval(() => {
+            setSeconds(parseInt((time - new Date())/1000));
+         }, 1000);
+         setSeconds(parseInt((time - new Date())/1000));
+      }
+      return () => clearInterval(interval);
+   }, [warmup]);
+
+   const formatTime = (seconds) => {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+   };
+
+   return (
+      <div className='flex flex-col gap-5 justify-around items-center w-full h-[84vh]'>
+         <h1 className="text-[200px] font-bold text-ping-pong-blue">{formatTime(seconds)}</h1>
+         <div className="w-full flex justify-around items-center text-4xl gap-8 text-bold text-slate-700">
+            <h2>{ warmup.player1} </h2>
+            <h2>{ warmup.player2} </h2>
+         </div>
+      </div>
+   )
+}
+
+function Match({ partido }) {
    let matchPoint = false
    // If the score is at least 10 points and the difference is at least 1 point
    if (partido.punt1 >= 10 && partido.punt1 - partido.punt2 >= 1) {
@@ -41,46 +123,30 @@ function AblyPubSub() {
       winner = partido.player2
    }
 
-   console.log(winner)
-
-
-      useConnectionStateListener('connected', () => {
-         console.log('Conectado con el canal de mensajes');
-      });
-
-      const { channel } = useChannel('marcador', 'prueba' ,(message) => {
-         console.log('Mensaje recibido:', message.data);
-         setPartido({
-            ...message.data,
-            inicio: new Date(message.data.inicio)
-         });
-      });
-
-
    return (
       <div className='flex flex-col justify-between w-full h-[84vh]'>
          <div>
             <AutoUploadDate inicio={partido.inicio} />
          </div>
 
-         { matchPoint && !winner &&
+         {matchPoint && !winner &&
             <div className="flex gap-4 justify-center text-5xl font-bold text-center text-red-400">
                <IconPingPong />
                <h1>
-                  PUNTO DE PARTIDO  
+                  PUNTO DE PARTIDO
                </h1>
                <IconPingPong />
             </div>
          }
-         
+
          <div className='grid justify-center items-center grid-cols-[auto_100px_auto] text-ping-pong-blue'>
             <div className={`flex flex-col items-center ${winner === partido.player1 && "text-green-600"} `}>
-               <h1 className='text-[300px] font-bold text-right leading-none'>{partido.punt1}</h1>
+               <h1 className='text-[300px] font-bold text-right leading-none'>{partido.servePlayer === 1 && "*"}{partido.punt1}</h1>
                <h3 className='text-4xl'>{partido.player1}</h3>
             </div>
             <h1 className='text-8xl text-center'>-</h1>
             <div className={`flex flex-col items-center ${winner === partido.player2 && "text-green-600"}`}>
-               <h1 className='text-[300px] font-bold text-left leading-none'>{partido.punt2}</h1>
+               <h1 className='text-[300px] font-bold text-left leading-none'>{partido.punt2}{partido.servePlayer === 2 && "*"}</h1>
                <h3 className='text-4xl'>{partido.player2}</h3>
             </div>
          </div>
@@ -91,6 +157,7 @@ function AblyPubSub() {
          </div>
       </div>);
 }
+
 
 function AutoUploadDate({inicio}) {
    const [ date, setDate ] = useState(new Date());

@@ -15,8 +15,8 @@ export async function POST(req) {
       jugador2: body.player2,
       puntuacion2: parseInt(body.punt2),
       arbitro: body.referee,
-      inicio: new Date(),
-      fin: new Date()
+      inicio: body.inicio ? new Date(body.inicio) : null,
+      fin: body.fin ? new Date(body.fin) : new Date()
    }
 
    await ComputeMatchStatistics(match)

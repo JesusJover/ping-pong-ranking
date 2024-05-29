@@ -33,7 +33,7 @@ function PlublicadorEstadoPartido ({
    }, [player1, player2, punt1, punt2, referee])
 }
 
-export default function RegistrarPartido() {
+export default function MatchLive() {
    const router = useRouter()
    const client = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY, clientId: 'registrar-partido'});
 

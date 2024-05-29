@@ -155,7 +155,7 @@ export default function IniciarPartido() {
                   {players.map((p, i) => <option key={i} value={p.id}>{p.nombre}</option>)}
                </select>
             </div>
-            <Link href="/partido-directo" disabled={loadingReg || servePlayer === 0} type="submit" className="bg-ping-pong-blue text-center text-white p-2 lg:p-3 rounded-lg text-sm lg:text-xl hover:bg-opacity-45">Iniciar partido</Link>
+            <Link href="/iniciar-partido/control-partido-directo" disabled={loadingReg || servePlayer === 0} type="submit" className="bg-ping-pong-blue text-center text-white p-2 lg:p-3 rounded-lg text-sm lg:text-xl hover:bg-opacity-45">Iniciar partido</Link>
          </form>
       </div>
    );

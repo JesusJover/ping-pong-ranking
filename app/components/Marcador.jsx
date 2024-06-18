@@ -66,6 +66,11 @@ function AblyPubSub() {
 }
 
 function NoMatch() {
+   return (
+      <div className="flex flex-col h-[84vh]">
+         {/* <Leaderboard /> */}
+      </div>
+   )
    
 }
 
